@@ -1,0 +1,160 @@
+{
+
+    "chains" : [{"f_{in}":[6],"f_{mid}":[],"f_{out}":[7],"delta":[6],"flowPrec":[[6,7]]},
+    {"f_{in}":[4],"f_{mid}":[],"f_{out}":[5],"delta":[4],"flowPrec":[[4,5]]},
+    {"f_{in}":[0],"f_{mid}":[1,2],"f_{out}":[3],"delta":[0],"flowPrec":[[0,1],[0,2],[1,2],[2,3]]}
+
+],
+
+        
+    "data" : [
+    {"sourceFlow":0},
+    {"sourceFlow":4},
+    {"sourceFlow":6}],
+
+    "flows" : [
+    {"id":0,"task":0,"msg":0,"jit":0,"flowTree":[2,3,0,16,9,11],"dataManagement":"sampling"},
+    {"id":1,"task":1,"msg":0,"jit":0,"flowTree":[10],"dataManagement":"sampling"},
+    {"id":2,"task":2,"msg":0,"jit":0,"flowTree":[10,11,8,17,5,7],"dataManagement":"sampling"},
+    {"id":3,"task":3,"msg":0,"jit":0,"flowTree":[6],"dataManagement":"sampling"},
+    {"id":4,"task":4,"msg":1,"jit":0,"flowTree":[10,11,8,17,5,7],"dataManagement":"sampling"},
+    {"id":5,"task":5,"msg":1,"jit":0,"flowTree":[6],"dataManagement":"sampling"},
+    {"id":6,"task":6,"msg":3,"jit":0,"flowTree":[14,15,12,17,1,3],"dataManagement":"queuing"},
+    {"id":7,"task":7,"msg":3,"jit":0,"flowTree":[2],"dataManagement":"queuing"}
+    ],
+
+
+    "tasks" : [
+    {"T":8,"C":2,"r":0,"prio":3},
+    {"T":8,"C":2,"r":0,"prio":3},
+    {"T":4,"C":2,"r":0,"prio":4},
+    {"T":2,"C":1,"r":0,"prio":3},
+    {"T":8,"C":2,"r":0,"prio":2},
+    {"T":4,"C":1,"r":0,"prio":2},
+    {"T":1,"C":0.5,"r":0,"prio":0},
+    {"T":1,"C":0.5,"r":0,"prio":0}
+    ],
+
+    "messages" : [
+    {"len":1600, "priority" : 7},
+    {"len":1600, "priority" : 6},
+    {"len":2400, "priority" : 5},
+    {"len":12000, "priority" : 0}
+    ],
+
+    "links" : [
+    {"id":2,"linkType":"CPU","sourceNode":2,"endNode":2},
+    {"id":3,"linkType":"DMA","rate":"1E+07","sourceNode":2,"endNode":2},
+    {"id":0,"linkType":"Net","rate":"1E+06","delay":"2E-03","sourceNode":2,"endNode":0},
+    {"id":1,"linkType":"Net","rate":"1E+06","delay":"2E-03","sourceNode":0,"endNode":2},
+
+    
+    {"id":7,"linkType":"DMA","rate":"1E+07","sourceNode":3,"endNode":3},
+    {"id":6,"linkType":"CPU","sourceNode":3,"endNode":3},
+    {"id":4,"linkType":"Net","rate":"1E+06","delay":"2E-03","sourceNode":3,"endNode":0},
+    {"id":5,"linkType":"Net","rate":"1E+06","delay":"2E-03","sourceNode":0,"endNode":3},
+
+  
+    {"id":10,"linkType":"CPU","sourceNode":4,"endNode":4},
+    {"id":11,"linkType":"DMA","rate":"1E+07","sourceNode":4,"endNode":4},
+    {"id":8,"linkType":"Net","rate":"1E+06","delay":"2E-03","sourceNode":4,"endNode":1},
+    {"id":9,"linkType":"Net","rate":"1E+06","delay":"2E-03","sourceNode":1,"endNode":4},
+
+
+    {"id":15,"linkType":"DMA","rate":"1E+07","sourceNode":5,"endNode":5},
+    {"id":14,"linkType":"CPU","sourceNode":5,"endNode":5},
+    {"id":12,"linkType":"Net","rate":"1E+06","delay":"2E-03","sourceNode":5,"endNode":1},
+    {"id":13,"linkType":"Net","rate":"1E+06","delay":"2E-03","sourceNode":1,"endNode":5},
+ 
+
+
+    {"id":16,"linkType":"Net","rate":"1E+06","delay":"2E-03","sourceNode":0,"endNode":1},
+    {"id":17,"linkType":"Net","rate":"1E+06","delay":"2E-03","sourceNode":1,"endNode":0}
+    ],
+
+
+    "nodes" : [
+    {"id":2,"NodeType":"Module","offset":0,"drift":1},
+    {"id":1,"NodeType":"Switch","offset":0,"drift":1},
+    {"id":3,"NodeType":"Module","offset":0,"drift":1},
+    {"id":4,"NodeType":"Module","offset":0,"drift":1},
+    {"id":0,"NodeType":"Switch","offset":0,"drift":1},
+    {"id":5,"NodeType":"Module","offset":0,"drift":1}
+    ],
+
+
+    "schedulingMatrixes" : [
+    {"link":2,"size":[4,3]},
+    {"link":3,"size":[1,1]},
+    {"link":0,"size":[8,3]},
+    {"link":1,"size":[8,3]},
+    {"link":7,"size":[1,1]},
+    {"link":6,"size":[4,3]},
+    {"link":5,"size":[8,3]},
+    {"link":4,"size":[8,3]},
+    {"link":10,"size":[5,3]},
+    {"link":11,"size":[1,1]},
+    {"link":8,"size":[8,3]},
+    {"link":9,"size":[8,3]},
+    {"link":15,"size":[1,1]},
+    {"link":14,"size":[4,3]},
+    {"link":12,"size":[8,3]},
+    {"link":13,"size":[8,3]},
+    {"link":16,"size":[8,3]},
+    {"link":17,"size":[8,3]}
+    ],
+
+    "Policies" : [
+    {"name": "FIFO", 
+    "placements":[
+                {"link":2,"places":[[0,0],[1,0],[2,0],[3,0],[0,1],[1,1],[2,1],[3,1]]},
+                {"link":3,"places":[[0,0]]},
+                {"link":0,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],
+                                        [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1]]},
+                {"link":1,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],
+                                       [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1]]},
+                {"link":4,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],
+                                       [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1]]},
+                {"link":5,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],
+                                        [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1]]},
+                {"link":16,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],
+                                        [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1]]},
+                {"link":17,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],
+                                        [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1]]},
+                {"link":8,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],
+                                        [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1]]},
+                {"link":9,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],
+                                      [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1]]},
+                {"link":12,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],
+                                        [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1]]},
+                {"link":13,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],
+                                        [0,1],[1,1],[2,1],[3,1],[4,1],[5,1],[6,1],[7,1]]},
+                {"link":7,"places":[[0,0]]},
+                {"link":6,"places":[[0,0],[1,0],[2,0],[3,0],[0,1],[1,1],[2,1],[3,1]]},
+                {"link":10,"places":[[0,0],[1,0],[2,0],[3,0],[4,0],[0,1],[1,1],[2,1],[3,1],[4,1]]},
+                {"link":14,"places":[[0,0],[1,0],[2,0],[3,0],[0,1],[1,1],[2,1],[3,1]]},
+                {"link":15,"places":[[0,0]]},
+                {"link":11,"places":[[0,0]]}
+                ]
+    },
+
+
+    {"name": "SPQ", "placements":[
+                {"link":2,"places":[[0,4,2]]},
+                {"link":6,"places":[[0,4,2]]},
+                {"link":10,"places":[[0,5,2]]},
+                {"link":14,"places":[[0,4,2]]},
+                {"link":0,"places":[[0,8,2]]},
+                {"link":1,"places":[[0,8,2]]},
+                {"link":4,"places":[[0,8,2]]},
+                {"link":5,"places":[[0,8,2]]},
+                {"link":16,"places":[[0,8,2]]},
+                {"link":17,"places":[[0,8,2]]},
+                {"link":8,"places":[[0,8,2]]},
+                {"link":9,"places":[[0,8,2]]},
+                {"link":12,"places":[[0,8,2]]},
+                {"link":13,"places":[[0,8,2]]}
+    ]
+    }
+    ]
+}
