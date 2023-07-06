@@ -1,3 +1,24 @@
+#######################################################################
+# Copyright (C) 2022-2023, ONERA and ISAE, Toulouse, FRANCE
+#
+# This file is part of IMA-TSN-Simulator
+#
+# IMA-TSN-Simulator is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation ; either version 2 of
+# the License, or (at your option) any later version.
+#
+# IMA-TSN-Simulator is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY ; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public
+# License along with this program ; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA
+#######################################################################
+
 import numpy as np
 import myClasses.NetworkClasses2 as NC2
 from myClasses.Policies import GlobalSched, Policy
@@ -170,7 +191,7 @@ if __name__ == "__main__":
         # Finally, overplot the sample averages, with horizontal alignment
         # in the center of each box
         ax1.plot(np.average(med.get_xdata()), np.average(boxData[i]),
-                color='w', marker='*', markeredgecolor='k')
+                color='w', marker='#', markeredgecolor='k')
 
     ax1.set_xticklabels(np.repeat(LatenciesNames,3),
                     rotation=45, fontsize=14)
