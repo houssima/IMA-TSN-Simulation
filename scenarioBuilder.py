@@ -33,9 +33,7 @@ def netBuilder(data):
 
     for n in data["nodes"]:
         NC2.Nodes.Node(n["id"],PHYNET,n['drift'],n['offset'])
-        print(PHYNET.Elements[-1])
-
-        
+    
     for l in data["links"]:
         if  l['linkType'] == 'CPU':
             NC2.Link.Link( int(l['id']), PHYNET.findElement(NC2.Nodes.Node,l['sourceNode']), 
@@ -78,7 +76,6 @@ def comBuilder(data,PHYNET):
                         currFlow.dataEntry = NC2.Coms.Data(curFC,flow)
     return coms
 
-
 def schedBuilder(data, PHYNET):
 
     GLOBALSCHED = NC2.Policies.GlobalSched()
@@ -114,52 +111,91 @@ def schedBuilder(data, PHYNET):
                         curLink.localScheduler.array[prio,place[2]] = SPQ
                     SPQ.findPrev()
     
-
-
-                
+              
 if __name__ == "__main__":
-    conffile = "confs/FullGCL.json"
-    with open(conffile) as user_file:
+    
+    platform = "confs/Platform.json"
+    comfile = "confs/Coms.json"
+    NB_SIM = 30
+
+    ############################ Initialyse platform ##########################
+    with open(platform) as user_file:
         file_contents = user_file.read()
-    data = json.loads(file_contents)
-    PHYNET = netBuilder(data)
-    coms = comBuilder(data, PHYNET)
-    schedBuilder(data,PHYNET)
-    tempLatencies, LatenciesNames = SIM.runSimulation(32,PHYNET,coms)
-
-    conffile = "confs/PartitionnedScenario.json"
-    with open(conffile) as user_file:
+        data = json.loads(file_contents)
+        PHYNET = netBuilder(data)
+    ############################ Initialyse functional chains #################
+    with open(comfile) as user_file:
         file_contents = user_file.read()
-    data = json.loads(file_contents)
-    PHYNET = netBuilder(data)
-    coms = comBuilder(data, PHYNET)
-    schedBuilder(data,PHYNET)
-    tempLatencies1, LatenciesNames = SIM.runSimulation(32,PHYNET,coms)
+        data = json.loads(file_contents)
+        coms = comBuilder(data, PHYNET)
+    nbChains = len(coms.FCList)
+    
+    listConfs = ["confs/FullGCL.json","confs/PartitionnedScenario.json","confs/FullSPQScenario.json"]
 
-    conffile = "confs/FullSPQScenario.json"
-    with open(conffile) as user_file:
-        file_contents = user_file.read()
-    data = json.loads(file_contents)
-    PHYNET = netBuilder(data)
-    coms = comBuilder(data, PHYNET)
-    schedBuilder(data,PHYNET)
-    tempLatencies2, LatenciesNames = SIM.runSimulation(32,PHYNET,coms)
+    tempBoxData = []
+    
+    ########################## For perfect synchronization ####################
+
+    # for confile in listConfs:
+    #     with open(confile) as user_file:
+    #         file_contents = user_file.read()
+    #     PHYNET.reset()
+    #     data = json.loads(file_contents)
+    #     schedBuilder(data,PHYNET)   #Change scheduling
+    #     tempLatencies, LatenciesNames = SIM.runSimulation(32,PHYNET,coms) #Collect data
+    #     tempBoxData += tempLatencies
+    
+    ######################## For static random offsets #######################
+    # for confile in listConfs:
+    #     with open(confile) as user_file:
+    #         file_contents = user_file.read()
+    #         data = json.loads(file_contents)
+        
+    #     schedBuilder(data,PHYNET)   #Change scheduling
+    #     tempLatencies = [[] for _ in range(nbChains)]
+    #     for _ in range (NB_SIM):
+    #         PHYNET.reset()
+    #         PHYNET.randomOffset()
+    #         tempLatenciesOff, LatenciesNames = SIM.runSimulation(32,PHYNET,coms) #Collect data
+    #         for i in range(nbChains):
+    #             tempLatencies[i] += tempLatenciesOff[i]
+    #     tempBoxData += tempLatencies
+        
+    ######################### For random offsets and drift with synchronization #
+    for confile in listConfs:
+        with open(confile) as user_file:
+            file_contents = user_file.read()
+        PHYNET.reset()
+        data = json.loads(file_contents)
+        schedBuilder(data,PHYNET)   #Change scheduling
+        PHYNET.periodicSync(2,[0,1],125,coms)   # Node 2 is clock master, 
+                                                # nodes 0 and 1 are Boundary clocks 
+                                                # and the period for PTP is 125 ms                  
+        for _ in range (NB_SIM):
+            PHYNET.reset()
+            PHYNET.randomOffset()
+            PHYNET.randomDrift()
+            coms.reset()
+            tempLatencies, LatenciesNames = SIM.runSimulation(32,PHYNET,coms) #Collect data
+            tempBoxData += tempLatencies
+            
 
 
+############################# Box Plot ##########################################
+    boxData = []
+    for i in range(nbChains):
+        for conf in range(len(listConfs)):
+            confData = []
+            for j in range (NB_SIM):
+                confData += tempBoxData[i + (conf*NB_SIM + j)*nbChains]
+            boxData.append(confData) #Reorganise data
 
-    boxData = [
-        # The definition of the box size depends on the number of tests
-        tempLatencies[0],   tempLatencies1[0],  tempLatencies2[0],
-        tempLatencies[1],   tempLatencies1[1],  tempLatencies2[1],
-        tempLatencies[2],   tempLatencies1[2],  tempLatencies2[2]
-    ]
-
-
+    
     fig, ax1 = plt.subplots(figsize=(10, 6))
     bp = ax1.boxplot(boxData)
 
     ax1.set(
-    axisbelow=True,  # Hide the grid behind plot objects
+    axisbelow=True,  
     title   =   'Comparison functional delays distributions',
     xlabel  =   'Functional Chain',
     ylabel  =   'Delay (ms)',
@@ -177,9 +213,7 @@ if __name__ == "__main__":
             box_x.append(box.get_xdata()[j])
             box_y.append(box.get_ydata()[j])
         box_coords = np.column_stack([box_x, box_y])
-        # Alternate between Dark Khaki and Royal Blue
         ax1.add_patch(Polygon(box_coords, facecolor=box_colors[i % 3]))
-        # Now draw the median lines back over what we just filled in
         med = bp['medians'][i]
         median_x = []
         median_y = []
@@ -188,15 +222,12 @@ if __name__ == "__main__":
             median_y.append(med.get_ydata()[j])
             ax1.plot(median_x, median_y, 'k')
         medians[i] = median_y[0]
-        # Finally, overplot the sample averages, with horizontal alignment
-        # in the center of each box
         ax1.plot(np.average(med.get_xdata()), np.average(boxData[i]),
-                color='w', marker='#', markeredgecolor='k')
+                color='w', marker='*', markeredgecolor='k')
 
     ax1.set_xticklabels(np.repeat(LatenciesNames,3),
                     rotation=45, fontsize=14)
     pos = np.arange(num_boxes) + 1
-    print([len(Latencies) for Latencies in boxData])
     upper_labels =  [ [round(min(Latencies),2),round(max(Latencies),2)] for Latencies in boxData]
     weights = ['bold', 'semibold']
     for tick, label in zip(range(num_boxes), ax1.get_xticklabels()):
@@ -206,7 +237,6 @@ if __name__ == "__main__":
                 horizontalalignment='center', size='x-small',
                 weight='bold', color=box_colors[k])
 
-    # Finally, add a basic legend
     fig.text(0.9, 0.1, 'GCL configuration',
             backgroundcolor=box_colors[0], color='black', weight='roman',
             size='x-small')
@@ -218,3 +248,4 @@ if __name__ == "__main__":
     fig.text(0.915, 0.013, ' Average Value', color='black', weight='roman',
             size='x-small')
     plt.show()
+    

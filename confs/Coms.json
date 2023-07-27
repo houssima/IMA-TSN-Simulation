@@ -1,0 +1,42 @@
+{
+    "chains" : [{"f_{in}":[6],"f_{mid}":[],"f_{out}":[7],"delta":[6],"flowPrec":[[6,7]]},
+    {"f_{in}":[4],"f_{mid}":[],"f_{out}":[5],"delta":[4],"flowPrec":[[4,5]]},
+    {"f_{in}":[0],"f_{mid}":[1,2],"f_{out}":[3],"delta":[0],"flowPrec":[[0,1],[0,2],[1,2],[2,3]]}
+    ],
+
+        
+    "data" : [
+    {"sourceFlow":0},
+    {"sourceFlow":4},
+    {"sourceFlow":6}],
+
+    "flows" : [
+    {"id":0,"task":0,"msg":0,"jit":0,"flowTree":[2,3,0,16,9,11],"dataManagement":"sampling"},
+    {"id":1,"task":1,"msg":0,"jit":0,"flowTree":[10],"dataManagement":"sampling"},
+    {"id":2,"task":2,"msg":0,"jit":0,"flowTree":[10,11,8,17,5,7],"dataManagement":"sampling"},
+    {"id":3,"task":3,"msg":0,"jit":0,"flowTree":[6],"dataManagement":"sampling"},
+    {"id":4,"task":4,"msg":1,"jit":0,"flowTree":[10,11,8,17,5,7],"dataManagement":"sampling"},
+    {"id":5,"task":5,"msg":1,"jit":0,"flowTree":[6],"dataManagement":"sampling"},
+    {"id":6,"task":6,"msg":3,"jit":0,"flowTree":[14,15,12,17,1,3],"dataManagement":"queuing"},
+    {"id":7,"task":7,"msg":3,"jit":0,"flowTree":[2],"dataManagement":"queuing"}
+    ],
+
+
+    "tasks" : [
+    {"T":8,"C":2,"r":0,"prio":3},
+    {"T":8,"C":2,"r":0,"prio":3},
+    {"T":4,"C":2,"r":0,"prio":4},
+    {"T":2,"C":1,"r":0,"prio":3},
+    {"T":8,"C":2,"r":0,"prio":2},
+    {"T":4,"C":1,"r":0,"prio":2},
+    {"T":1,"C":0.5,"r":0,"prio":0},
+    {"T":1,"C":0.5,"r":0,"prio":0}
+    ],
+
+    "messages" : [
+    {"len":1600, "priority" : 7},
+    {"len":1600, "priority" : 6},
+    {"len":2400, "priority" : 5},
+    {"len":12000, "priority" : 0}
+    ]
+}

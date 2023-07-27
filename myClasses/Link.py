@@ -21,6 +21,11 @@ class Link:
         net.Elements.append(self)
         net.links.append(self)
         net.nb_links +=1
+    
+    def reset(self):
+        self.in_transmission = None
+        self.channeling = []
+        self.arrived = []
 
     def workload(self, flow):
         if self.linkType ==  "CPU":
@@ -40,9 +45,7 @@ class Link:
 
     def sendDecision(self,refTime):
         newEvents = []
-        print("On link", self.id)
         instance = self.localScheduler.electMessage()
-        print("election at",refTime,":",self.arrived,instance)
         if self.linkType == 'CPU' and instance:
             instance.acquireData()
         if instance:
@@ -65,10 +68,11 @@ class Link:
         newEvents = []
         if event.eventType == "Arrival":
             if isinstance(event.instance,Coms.Flow):
-                tempEvent = event.copy()
-                tempEvent.refTime = event.refTime + event.instance.task.period
-                newEvents.append(tempEvent)
-                event.instance = event.instance.generateMessage()
+                if not isinstance(event.instance.task, Coms.TaskEventTriggered):
+                    tempEvent = event.copy()
+                    tempEvent.refTime = event.refTime + event.instance.task.period
+                    newEvents.append(tempEvent)
+                    event.instance = event.instance.generateMessage()
             self.arrived.append(event.instance)
         if event.eventType ==  "endOfTransmission":
             self.arrived.remove(event.instance)
@@ -82,5 +86,12 @@ class Link:
                 nextFlow = event.instance.flow.findNextFlow(self)
                 for nf in nextFlow:
                     nf.refreshData(event.instance.carriedData)
+                    if isinstance(nf.task,Coms.TaskEventTriggered):
+                        taskEvent = nf.task.istrigger(event)
+                        if taskEvent:
+                            newEvents.append(taskEvent)
+        if event.eventType == "TransmissionOpportunity" and not self.in_transmission:
+            newEvents += self.sendDecision(event.refTime)
         return newEvents
+
 

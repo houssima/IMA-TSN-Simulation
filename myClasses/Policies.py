@@ -1,4 +1,3 @@
-from curses import window
 import numpy as np
 
 class GlobalSched:
@@ -136,16 +135,17 @@ class GCL(Policy):
         
     def rule(self,instance):
         if self.state == 1:
-            currentPhase = self.link.src.currentTime%self.period
+            #time is in ms
+            #clock cycle is about ns
+            # times can be rounded to 0.1ns, so 10e-7 in the simulator
+            currentPhase = round(self.link.src.currentTime%self.period, 7)
             cond = False
-            print(self,self.period)
+            
             for w in self.windows:
                 for k in range(int(self.period/w[2])):
-                    if self.link.id in [5,8]:
-                        print(currentPhase >= w[0]+k*w[2] , w[1] + w[0] +k*w[2] - currentPhase, self.link.workload(instance.flow))
-                        print(instance ,'at', self.link.src.currentTime, 'on', self.link.id)
-                        print(w,self.link.workload(instance.flow))
                     if currentPhase >= w[0]+k*w[2] and w[1]+ w[0] +k*w[2]- currentPhase >= self.link.workload(instance.flow):
+                        cond = True
+                    if currentPhase- self.period >= w[0]+k*w[2] and w[1]+ w[0] +k*w[2]- (currentPhase - self.period)>= self.link.workload(instance.flow):
                         cond = True
             if cond:
                 self.instanceElected.append(instance)
@@ -158,14 +158,16 @@ class GCL(Policy):
     def addWindow(self,offset,length,period):
         self.windows.append([offset,length,period])
         if len(self.windows)>1:
-            print(self.windows)
             self.period = np.lcm(self.period,period)
             
         else:
             self.period = period
 
     def nextOpportunity(self):
-        currentPhase = self.link.src.currentTime%self.period
+        #time is in ms
+        #clock cycle is about ns
+        # times can be rounded to 0.1ns, so 10e-7 in the simulator
+        currentPhase = round(self.link.src.currentTime%self.period, 7)
         opportunities = []
         for w in self.windows:
             for k in range(int(2*self.period/w[2])):

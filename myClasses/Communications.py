@@ -1,19 +1,22 @@
-from calendar import c
-import matplotlib.pyplot as plt
-from math import floor
-import numpy as np
 import random
+import myClasses.Event as Event
 
 class Communications:
     def __init__(self) -> None:
         self.FCList = []
 
+    def reset(self):
+        for FC in self.FCList:
+            for f in FC.flowList:
+                f.reset()
+
 class FunctionnalChain:
-    def __init__(self,coms):
+    def __init__(self,coms, LatencyMeasured = True):
         coms.FCList.append(self)
         self.dataList = []
         self.flowList = []
         self.PrecRelation = []
+        self.LatencyMeasured = LatencyMeasured
 
     def findInitFlows(self):
         initFlows = []
@@ -44,9 +47,19 @@ class Flow:
         self.flowTree = []
         self.FuncChain = FC
         self.nbInstances = 0
+
+        self.task.flow = self
+
         ########### Representation
         self.nextData = [] #represents the set of data instance that will be carried by the next instance of this flow
         self.color = [random.randint(0,255)/256,random.randint(0,255)/256,random.randint(0,255)/256]
+    
+    def reset(self):
+        self.nbInstances = 0
+        self.nextData = []
+
+    def __repr__(self):
+        return " flow_{} generating instance {} with data".format(self.id,self.nbInstances,self.nextData)
     
     def generateMessage(self):
         if self.dataEntry:
@@ -83,9 +96,7 @@ class Flow:
 
     def refreshData(self,carriedData):
         for d in self.nextData:
-            print("In next data", d, [f.id for f in d.path])
             for d1 in carriedData:
-                print("In new data", d1,[f.id for f in d1.path])
                 if d.path == d1.path:
                     self.nextData.remove(d)
         for d in carriedData:
@@ -96,8 +107,6 @@ class Flow:
     
     def provideData(self,instance):
         instance.carriedData = [d.copy() for d in self.nextData]
-        print("###########################################")
-        print(instance)
 
 class QueuingFlow(Flow):
     def __init__(self, id, task, message, FC):
@@ -152,6 +161,7 @@ class FlowInstance:
 
     def __str__(self) -> str:
         return " f_{}^{} carrying {}".format(self.flow.id,self.instanceNumber,self.carriedData)
+
 class Task:
     def __init__(self,period, execTime, deadline, offset, prio):
         self.period = period
@@ -159,6 +169,28 @@ class Task:
         self.deadline = deadline
         self.offset = offset
         self.prio = prio
+        self.flow = None
+
+class TaskEventTriggered(Task):
+    def __init__(self,event,execTime,deadline,offset,prio):
+        Task.__init__(self, 0, execTime, deadline,offset,prio)
+        self.trigger = event
+    
+    def istrigger(self, event):
+        if event.instance.flow == self.trigger.instance.flow and event.eventType == self.trigger.eventType:
+            return Event.Event(event.refTime, self.flow.flowTree[0], self.flow.generateMessage(), "Arrival")
+
+class PTP(TaskEventTriggered):
+    def __init__(self, event, execTime, deadline, offset, prio):
+        super().__init__(event, execTime, deadline, offset, prio)
+
+    def istrigger(self, event):
+        if event.instance.flow == self.trigger.instance.flow and event.eventType == self.trigger.eventType:
+            l = event.instance.flow.flowTree[0]
+            l.dst.synchronisation(l.src.currentTime) 
+            return Event.Event(event.refTime, self.flow.flowTree[0], self.flow.generateMessage(), "Arrival")
+
+
 
 class Data:
     def __init__(self,FC,flow):
@@ -178,7 +210,7 @@ class DataInstance:
         return " d_{}^{}".format(self.data.id,self.instanceNumber)
     
     def copy(self):
-        new = DataInstance(self.data,self.instanceNumber,[])
+        new = DataInstance(self.data,self.instanceNumber,None)
         new.path = self.path.copy()
         return(new)
     
